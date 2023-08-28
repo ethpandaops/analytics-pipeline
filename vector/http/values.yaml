@@ -1,0 +1,478 @@
+vector:
+  fullnameOverride: xatu-vector-http-kafka
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 512Mi
+    limits:
+      cpu: 2
+      memory: 2Gi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 12
+    targetCPUUtilizationPercentage: 85
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  customConfig:
+    data_dir: /vector-data-dir
+    api:
+      enabled: true
+      address: 0.0.0.0:8686
+      playground: false
+    sources:
+      xatu_server_events_http:
+        address: 0.0.0.0:9000
+        type: http
+        encoding: ndjson
+      internal_metrics:
+        type: internal_metrics
+    transforms:
+      xatu_server_events_router:
+        type: route
+        inputs:
+          - xatu_server_events_http
+        route:
+          eth_v1_beacon_committee: .event.name == "BEACON_API_ETH_V1_BEACON_COMMITTEE"
+          eth_v1_debug_fork_choice_reorg: .event.name == "BEACON_API_ETH_V1_DEBUG_FORK_CHOICE_REORG"
+          eth_v1_debug_fork_choice_reorg_v2: .event.name == "BEACON_API_ETH_V1_DEBUG_FORK_CHOICE_REORG_V2"
+          eth_v1_debug_fork_choice: .event.name == "BEACON_API_ETH_V1_DEBUG_FORK_CHOICE"
+          eth_v1_debug_fork_choice_v2: .event.name == "BEACON_API_ETH_V1_DEBUG_FORK_CHOICE_V2"
+          eth_v1_events_attestation: .event.name == "BEACON_API_ETH_V1_EVENTS_ATTESTATION"
+          eth_v1_events_attestation_v2: .event.name == "BEACON_API_ETH_V1_EVENTS_ATTESTATION_V2"
+          eth_v1_events_block: .event.name == "BEACON_API_ETH_V1_EVENTS_BLOCK"
+          eth_v1_events_block_v2: .event.name == "BEACON_API_ETH_V1_EVENTS_BLOCK_V2"
+          eth_v1_events_chain_reorg: .event.name == "BEACON_API_ETH_V1_EVENTS_CHAIN_REORG"
+          eth_v1_events_chain_reorg_v2: .event.name == "BEACON_API_ETH_V1_EVENTS_CHAIN_REORG_V2"
+          eth_v1_events_contribution_and_proof: .event.name == "BEACON_API_ETH_V1_EVENTS_CONTRIBUTION_AND_PROOF"
+          eth_v1_events_contribution_and_proof_v2: .event.name == "BEACON_API_ETH_V1_EVENTS_CONTRIBUTION_AND_PROOF_V2"
+          eth_v1_events_finalized_checkpoint: .event.name == "BEACON_API_ETH_V1_EVENTS_FINALIZED_CHECKPOINT"
+          eth_v1_events_finalized_checkpoint_v2: .event.name == "BEACON_API_ETH_V1_EVENTS_FINALIZED_CHECKPOINT_V2"
+          eth_v1_events_head: .event.name == "BEACON_API_ETH_V1_EVENTS_HEAD"
+          eth_v1_events_head_v2: .event.name == "BEACON_API_ETH_V1_EVENTS_HEAD_V2"
+          eth_v1_events_voluntary_exit: .event.name == "BEACON_API_ETH_V1_EVENTS_VOLUNTARY_EXIT"
+          eth_v1_events_voluntary_exit_v2: .event.name == "BEACON_API_ETH_V1_EVENTS_VOLUNTARY_EXIT_V2"
+          eth_v1_validator_attestation_data: .event.name == "BEACON_API_ETH_V1_VALIDATOR_ATTESTATION_DATA"
+          eth_v2_beacon_block: .event.name == "BEACON_API_ETH_V2_BEACON_BLOCK"
+          eth_v2_beacon_block_v2: .event.name == "BEACON_API_ETH_V2_BEACON_BLOCK_V2"
+          mempool_transaction: .event.name == "MEMPOOL_TRANSACTION"
+          mempool_transaction_v2: .event.name == "MEMPOOL_TRANSACTION_V2"
+      xatu_server_events_router_matched:
+        type: log_to_metric
+        inputs:
+          - xatu_server_events_router.eth_v1_beacon_committee
+          - xatu_server_events_router.eth_v1_debug_fork_choice
+          - xatu_server_events_router.eth_v1_debug_fork_choice_v2
+          - xatu_server_events_router.eth_v1_debug_fork_choice_reorg
+          - xatu_server_events_router.eth_v1_debug_fork_choice_reorg_v2
+          - xatu_server_events_router.eth_v1_events_attestation
+          - xatu_server_events_router.eth_v1_events_attestation_v2
+          - xatu_server_events_router.eth_v1_events_block
+          - xatu_server_events_router.eth_v1_events_block_v2
+          - xatu_server_events_router.eth_v1_events_chain_reorg
+          - xatu_server_events_router.eth_v1_events_chain_reorg_v2
+          - xatu_server_events_router.eth_v1_events_contribution_and_proof
+          - xatu_server_events_router.eth_v1_events_contribution_and_proof_v2
+          - xatu_server_events_router.eth_v1_events_finalized_checkpoint
+          - xatu_server_events_router.eth_v1_events_finalized_checkpoint_v2
+          - xatu_server_events_router.eth_v1_events_head
+          - xatu_server_events_router.eth_v1_events_head_v2
+          - xatu_server_events_router.eth_v1_events_voluntary_exit
+          - xatu_server_events_router.eth_v1_events_voluntary_exit_v2
+          - xatu_server_events_router.eth_v1_validator_attestation_data
+          - xatu_server_events_router.eth_v2_beacon_block
+          - xatu_server_events_router.eth_v2_beacon_block_v2
+          - xatu_server_events_router.mempool_transaction
+          - xatu_server_events_router.mempool_transaction_v2
+        metrics:
+          - type: counter
+            field: event.name
+            namespace: xatu
+            name: xatu_server_events_matched
+            tags:
+              event: "{{`{{event.name}}`}}"
+              client_name: "{{`{{meta.client.name}}`}}"
+              source: "xatu-http-kafka"
+      xatu_server_events_router_unmatched:
+        type: log_to_metric
+        inputs:
+          - xatu_server_events_router._unmatched
+        metrics:
+          - type: counter
+            field: event.name
+            namespace: xatu
+            name: xatu_server_events_unmatched
+            tags:
+              event: "{{`{{event.name}}`}}"
+              client_name: "{{`{{meta.client.name}}`}}"
+              source: "xatu-http-kafka"
+    sinks:
+      metrics:
+        type: prometheus_exporter
+        address: 0.0.0.0:9598
+        inputs:
+          - xatu_server_events_router_matched
+          - xatu_server_events_router_unmatched
+          - internal_metrics
+      beacon_api_eth_v1_beacon_committee_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_beacon_committee
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-beacon-committee
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_head_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_head
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-head
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_head_v2_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_head_v2
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-head-v2
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_block_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_block
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-block
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_block_v2_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_block_v2
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-block-v2
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_attestation_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_attestation
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-attestation
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_attestation_v2_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_attestation_v2
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-attestation-v2
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_validator_attestation_data_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_validator_attestation_data
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-validator-attestation-data
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_voluntary_exit_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_voluntary_exit
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-voluntary-exit
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_voluntary_exit_v2_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_voluntary_exit_v2
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-voluntary-exit-v2
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_finalized_checkpoint_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_finalized_checkpoint
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-finalized-checkpoint
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_finalized_checkpoint_v2_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_finalized_checkpoint_v2
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-finalized-checkpoint-v2
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_chain_reorg_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_chain_reorg
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-chain-reorg
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_chain_reorg_v2_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_chain_reorg_v2
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-chain-reorg-v2
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_contribution_and_proof_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_contribution_and_proof
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-contribution-and-proof
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v1_events_contribution_and_proof_v2_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_events_contribution_and_proof_v2
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-events-contribution-and-proof-v2
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      mempool_transaction_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.mempool_transaction
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: mempool-transaction
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      mempool_transaction_v2_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.mempool_transaction_v2
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: mempool-transaction-v2
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+      beacon_api_eth_v2_beacon_block_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v2_beacon_block
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v2-beacon-block
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+        librdkafka_options:
+          message.max.bytes: "10485760" # 10MB
+      beacon_api_eth_v2_beacon_block_v2_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v2_beacon_block_v2
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v2-beacon-block-v2
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+        librdkafka_options:
+          message.max.bytes: "10485760" # 10MB
+      eth_v1_debug_fork_choice_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_debug_fork_choice
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-debug-fork-choice
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+        librdkafka_options:
+          message.max.bytes: "10485760" # 10MB
+      eth_v1_debug_fork_choice_v2_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_debug_fork_choice_v2
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-debug-fork-choice-v2
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+        librdkafka_options:
+          message.max.bytes: "10485760" # 10MB
+      eth_v1_debug_fork_choice_reorg_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_debug_fork_choice_reorg
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-debug-fork-choice-reorg
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+        librdkafka_options:
+          message.max.bytes: "10485760" # 10MB
+      eth_v1_debug_fork_choice_reorg_v2_kafka:
+        type: kafka
+        inputs:
+          - xatu_server_events_router.eth_v1_debug_fork_choice_reorg_v2
+        bootstrap_servers: NOT_SET
+        key_field: "event.id"
+        topic: beacon-api-eth-v1-debug-fork-choice-reorg-v2
+        acknowledgements:
+          enabled: false
+        compression: snappy
+        healthcheck:
+          enabled: true
+        encoding:
+          codec: json
+        librdkafka_options:
+          message.max.bytes: "10485760" # 10MB
+
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: api
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: api
