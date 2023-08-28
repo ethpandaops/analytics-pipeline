@@ -1,0 +1,15 @@
+
+{{- range $name, $user := .Values.users }}
+{{- if $user.enabled }}
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: {{ $name }}
+  labels:
+    strimzi.io/cluster: {{ include "xatu-kafka.fullname" $ }}
+    {{- include "xatu-kafka.labels" $ | nindent 4 }}
+spec:
+ {{- tpl (toString ($user.spec | toYaml)) $ | nindent 2 }}
+{{- end }}
+---
+{{- end }}

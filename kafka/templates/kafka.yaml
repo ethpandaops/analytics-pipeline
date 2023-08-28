@@ -1,0 +1,8 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: {{ include "xatu-kafka.fullname" . }}
+  labels:
+    {{- include "xatu-kafka.labels" . | nindent 4 }}
+spec:
+  {{- tpl (toString (.Values.cluster | toYaml)) $ | nindent 2 }}
