@@ -24,10 +24,10 @@ clickhouse:
       # merge_tree/old_parts_lifetime: 10
       # merge_tree/temporary_directories_lifetime: 10
     users:
-      operator/password: FILL_ME_BASE64
-      admin/password: FILL_ME_BASE64
-      grafana/password: FILL_ME_BASE64
-      vector/password: FILL_ME_BASE64
+      operator/password: FILL_ME
+      admin/password: FILL_ME
+      grafana/password: FILL_ME
+      vector/password: FILL_ME
     profiles:
       grafana/max_memory_usage: 1073741824 # 1Gi
     zookeeper:
