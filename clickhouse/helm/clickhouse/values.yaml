@@ -41,3 +41,12 @@ clickhouse:
         layout:
           shardsCount: 1
           replicasCount: 2
+  volumeClaimTemplates:
+  - name: default
+    spec:
+      storageClassName: FILL_ME
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
