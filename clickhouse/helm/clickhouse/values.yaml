@@ -1,0 +1,43 @@
+fullnameOverride: xatu-clickhouse
+
+clickhouse:
+  resources:
+    requests:
+      cpu: 7
+      memory: 15Gi
+  fullnameOverride: xatu-clickhouse
+  image:
+    tag: "23.6"
+  configuration:
+    # options available here https://github.com/ClickHouse/ClickHouse/blob/master/programs/server/config.xml
+    settings:
+      distributed_ddl/path: /clickhouse/xatu-clickhouse/task_queue/ddl
+      # distributed_ddl/task_max_lifetime: 360
+      max_table_size_to_drop: 500G
+      max_partition_size_to_drop: 300G
+      max_concurrent_queries: 1000
+      logger/level: information
+      # not working, might need to do https://kb.altinity.com/altinity-kb-setup-and-maintenance/ch-logs-2-json-vectordev/
+      logger/formatting: json
+      # clean all logs after 7 days
+      query_log/engine: "ENGINE = MergeTree PARTITION BY (event_date) ORDER BY (event_time) TTL event_date + INTERVAL 7 DAY DELETE"
+      # merge_tree/old_parts_lifetime: 10
+      # merge_tree/temporary_directories_lifetime: 10
+    users:
+      operator/password: FILL_ME_BASE64
+      admin/password: FILL_ME_BASE64
+      grafana/password: FILL_ME_BASE64
+      vector/password: FILL_ME_BASE64
+    profiles:
+      grafana/max_memory_usage: 1073741824 # 1Gi
+    zookeeper:
+      nodes:
+      - host: xatu-clickhouse-zookeeper
+    clusters:
+      - name: replicated
+        templates:
+          podTemplate: default
+          serviceTemplate: default
+        layout:
+          shardsCount: 1
+          replicasCount: 2

@@ -1,0 +1,33 @@
+zookeeper:
+  fullnameOverride: xatu-clickhouse-zookeeper
+
+  image:
+    tag: 3.8.1
+
+  nodeSelector:
+    node.kubernetes.io/pool: clickhouse-keeper
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        vmagent: common
+
+  heapSize: "5120"
+  # enable auto purge
+  autopurge:
+    purgeInterval: 1
+    snapRetainCount: 3
+
+  # raise timeout because when autopurge runs it can cause some decent lag
+  livenessProbe:
+    timeoutSeconds: 15
+    failureThreshold: 16
+  readinessProbe:
+    timeoutSeconds: 15
+    failureThreshold: 16

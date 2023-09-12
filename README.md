@@ -19,7 +19,9 @@ graph LR
 - [`vector/http`](./vector/http) - Vector config for xatu -> kafka
 - [`vector/clickhouse`](./vector/kclickhousefka) - Vector config for kafka -> clickhouse
 - [`vector/s3`](./vector/s3) - Vector config for kafka -> s3
-- [`clickhouse`](./clickhouse) - Clickhouse migrations
+- [`clickhouse/migrations`](./clickhouse/migrations) - Clickhouse migrations
+- [`clickhouse/helm/clickhouse`](./clickhouse/helm/clickhouse/) - Clickhouse helm chart
+- [`clickhouse/helm/zookeeper`](./clickhouse/helm/zookeeper/) - Zookeeper helm chart
 - [`kafka`](./kafka) - Kafka config
 
 ## Kafka
@@ -29,3 +31,7 @@ We use [strimzi-kafka-operator](https://github.com/strimzi/strimzi-kafka-operato
 ## Clickhouse
 
 We us Altinity [clickhouse-operator](https://github.com/Altinity/clickhouse-operator) for the clickhouse cluster and [golange-migrate](https://github.com/golang-migrate/migrate) for migrations. The cluster is distributed with 3 shards and 2 replicas per shard.
+
+```bash
+migrate -database "clickhouse://127.0.0.1:9000?username=admin&password=XYZ&database=default&x-multi-statement=true&x-cluster-name='{cluster}'&x-migrations-table-engine=ReplicatedMergeTree" -path ./clickhouse/migrations up
+```

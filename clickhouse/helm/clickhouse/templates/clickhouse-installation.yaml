@@ -1,0 +1,124 @@
+apiVersion: "clickhouse.altinity.com/v1"
+kind: "ClickHouseInstallation"
+metadata:
+  name: "{{ include "xatu-clickhouse.fullname" . }}"
+  labels:
+    {{- include "xatu-clickhouse.labels" . | nindent 4 }}
+spec:
+  defaults:
+    storageManagement:
+      provisioner: Operator
+    templates: 
+      serviceTemplate: default
+  
+  configuration:
+    {{- if .Values.clickhouse.configuration.settings }}
+    settings:
+      {{- tpl (toString (.Values.clickhouse.configuration.settings | toYaml)) $ | nindent 6 }}
+    {{ end -}}
+    users:
+      clickhouse_operator/networks/ip: 10.0.0.0/8
+      # clickhouse operator complains when this is not set
+      directories/networks/ip: 10.0.0.0/8
+      default/networks/ip: 10.0.0.0/8
+      admin/networks/ip: "::/0"
+      admin/profile: default
+      admin/quota: default
+      grafana/networks/ip: "::/0"
+      grafana/profile: grafana
+      grafana/quota: default
+      vector/networks/ip: "::/0"
+      vector/profile: default
+      vector/quota: default
+
+    {{- if .Values.clickhouse.configuration.users }}
+      {{- tpl (toString (.Values.clickhouse.configuration.users | toYaml)) $ | nindent 6 }}
+    {{ end -}}
+    profiles:
+      user/query_cache_max_size_in_bytes: 1073741824 # 1Gi
+      user/query_cache_max_entries: 100
+      default/query_cache_max_size_in_bytes: 1073741824 # 1Gi
+      default/query_cache_max_entries: 100
+    {{- if .Values.clickhouse.configuration.profiles }}
+      {{- tpl (toString (.Values.clickhouse.configuration.profiles | toYaml)) $ | nindent 6 }}
+    {{ end -}}
+    quotas:
+      user/interval/duration: "3600"
+    {{- if .Values.clickhouse.configuration.quotas }}
+      {{- tpl (toString (.Values.clickhouse.configuration.quotas | toYaml)) $ | nindent 6 }}
+    {{ end -}}
+    {{- if .Values.clickhouse.configuration.zookeeper }}
+    zookeeper:
+      {{- tpl (toString (.Values.clickhouse.configuration.zookeeper | toYaml)) $ | nindent 6 }}
+    {{ end -}}
+    {{- if .Values.clickhouse.configuration.clusters }}
+    clusters:
+      {{- tpl (toString (.Values.clickhouse.configuration.clusters | toYaml)) $ | nindent 6 }}
+    {{ end }}
+
+  troubleshoot: "true"
+
+  templates:
+    {{- if .Values.clickhouse.configuration.clusters }}
+    volumeClaimTemplates:
+      {{- tpl (toString (.Values.clickhouse.volumeClaimTemplates | toYaml)) $ | nindent 6 }}
+    {{- end }}
+
+    serviceTemplates:
+    - name: default
+      generateName: chendpoint-{chi}
+      spec:
+        ports:
+          - name: http
+            port: 8123
+          - name: tcp
+            port: 9000
+        type: ClusterIP
+
+    podTemplates:
+    {{- if .Values.clickhouse.podTemplates }}
+    {{- range $podTemplate := $.Values.clickhouse.podTemplates }}
+    - name: {{ $podTemplate.name }}
+      spec:
+        nodeSelector:
+          {{- if $podTemplate.spec.nodeSelector }}
+          {{- tpl (toString ($podTemplate.spec.nodeSelector | toYaml)) $ | nindent 10 }}
+          {{- else }}
+          node.kubernetes.io/pool: clickhouse
+          {{- end }}
+        affinity:
+          {{- if $podTemplate.spec.affinity }}
+          {{- tpl (toString ($podTemplate.spec.affinity | toYaml)) $ | nindent 10 }}
+          {{- else }}
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: clickhouse.altinity.com/cluster
+                    operator: In
+                    values:
+                    {{- range $cluster := $.Values.clickhouse.configuration.clusters }}
+                    - {{ $cluster.name }}
+                    {{- end }}
+                topologyKey: kubernetes.io/hostname
+          {{- end }}
+        containers:
+          {{- if $podTemplate.spec.containers }}
+          {{- tpl (toString ($podTemplate.spec.containers | toYaml)) $ | nindent 10 }}
+          {{- else }}
+          - name: "clickhouse-pod"
+            image: clickhouse/clickhouse-server:{{$.Values.clickhouse.image.tag}}
+            imagePullPolicy: Always
+            {{- if $.Values.clickhouse.resources }}
+            resources:
+              {{- tpl (toString ($.Values.clickhouse.resources | toYaml)) $ | nindent 14 }}
+            {{- end }}
+            {{- if $.Values.clickhouse.volumeMounts }}
+            volumeMounts:
+              {{- tpl (toString ($.Values.clickhouse.volumeMounts | toYaml)) $ | nindent 14 }}
+            {{- end }}
+          {{- end }}
+    {{- end }}
+    {{ end -}}
