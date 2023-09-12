@@ -4,9 +4,6 @@ zookeeper:
   image:
     tag: 3.8.1
 
-  nodeSelector:
-    node.kubernetes.io/pool: clickhouse-keeper
-
   podDisruptionBudget:
     enabled: true
     minAvailable: 1
@@ -15,8 +12,6 @@ zookeeper:
     enabled: true
     serviceMonitor:
       enabled: true
-      additionalLabels:
-        vmagent: common
 
   heapSize: "5120"
   # enable auto purge
@@ -31,3 +26,18 @@ zookeeper:
   readinessProbe:
     timeoutSeconds: 15
     failureThreshold: 16
+
+  persistence:
+    enabled: true
+    storageClass: FILL_ME
+    size: 10Gi
+
+  replicaCount: 3
+
+  resources:
+    requests:
+      cpu: 1
+      memory: 5Gi
+    limits:
+      cpu: 2
+      memory: 7Gi
