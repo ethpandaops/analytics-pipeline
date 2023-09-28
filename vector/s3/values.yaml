@@ -130,6 +130,13 @@ vector:
           eth_v1_validator_attestation_data: .event.name == "BEACON_API_ETH_V1_VALIDATOR_ATTESTATION_DATA"
           eth_v2_beacon_block: .event.name == "BEACON_API_ETH_V2_BEACON_BLOCK"
           eth_v2_beacon_block_v2: .event.name == "BEACON_API_ETH_V2_BEACON_BLOCK_V2"
+          eth_v2_beacon_block_proposer_slashing: .event.name == "BEACON_API_ETH_V2_BEACON_BLOCK_PROPOSER_SLASHING"
+          eth_v2_beacon_block_attester_slashing: .event.name == "BEACON_API_ETH_V2_BEACON_BLOCK_ATTESTER_SLASHING"
+          eth_v2_beacon_block_bls_to_execution_change: .event.name == "BEACON_API_ETH_V2_BEACON_BLOCK_BLS_TO_EXECUTION_CHANGE"
+          eth_v2_beacon_block_execution_transaction: .event.name == "BEACON_API_ETH_V2_BEACON_BLOCK_EXECUTION_TRANSACTION"
+          eth_v2_beacon_block_voluntary_exit: .event.name == "BEACON_API_ETH_V2_BEACON_BLOCK_VOLUNTARY_EXIT"
+          eth_v2_beacon_block_deposit: .event.name == "BEACON_API_ETH_V2_BEACON_BLOCK_DEPOSIT"
+          eth_v2_beacon_block_withdrawal: .event.name == "BEACON_API_ETH_V2_BEACON_BLOCK_WITHDRAWAL"
           mempool_transaction: .event.name == "MEMPOOL_TRANSACTION"
           mempool_transaction_v2: .event.name == "MEMPOOL_TRANSACTION_V2"
       xatu_server_events_router_matched:
@@ -157,6 +164,13 @@ vector:
           - xatu_server_events_router.eth_v1_validator_attestation_data
           - xatu_server_events_router.eth_v2_beacon_block
           - xatu_server_events_router.eth_v2_beacon_block_v2
+          - xatu_server_events_router.eth_v2_beacon_block_proposer_slashing
+          - xatu_server_events_router.eth_v2_beacon_block_attester_slashing
+          - xatu_server_events_router.eth_v2_beacon_block_bls_to_execution_change
+          - xatu_server_events_router.eth_v2_beacon_block_execution_transaction
+          - xatu_server_events_router.eth_v2_beacon_block_voluntary_exit
+          - xatu_server_events_router.eth_v2_beacon_block_deposit
+          - xatu_server_events_router.eth_v2_beacon_block_withdrawal
           - xatu_server_events_router.mempool_transaction
           - xatu_server_events_router.mempool_transaction_v2
         metrics:
@@ -821,6 +835,195 @@ vector:
         endpoint: ${ENDPOINT}
         region: "us-east-1"
         key_prefix: "ingest/BEACON_API_ETH_V1_DEBUG_FORK_CHOICE_REORG_V2/%F/%H/%M-"
+        auth:
+          access_key_id: ${AWS_ACCESS_KEY_ID}
+          secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+        encoding:
+          codec: json
+        acknowledgements:
+          enabled: false
+        buffer:
+          type: disk
+          max_size: 1073741952
+        batch:
+          max_bytes: 134217728
+          max_events: 1000000
+          timeout_secs: 60
+        healthcheck:
+          enabled: false
+      beacon_api_eth_v2_beacon_block_proposer_slashing_s3:
+        type: aws_s3
+        inputs:
+          - xatu_server_events_router.eth_v2_beacon_block_proposer_slashing
+        bucket: ${BUCKET}
+        compression: gzip
+        content_type: application/gzip
+        filename_extension: json.gz
+        endpoint: ${ENDPOINT}
+        region: "us-east-1"
+        key_prefix: "ingest/BEACON_API_ETH_V2_BEACON_BLOCK_PROPOSER_SLASHING/%F/%H/%M-"
+        auth:
+          access_key_id: ${AWS_ACCESS_KEY_ID}
+          secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+        encoding:
+          codec: json
+        acknowledgements:
+          enabled: false
+        buffer:
+          type: disk
+          max_size: 1073741952
+        batch:
+          max_bytes: 134217728
+          max_events: 1000000
+          timeout_secs: 60
+        healthcheck:
+          enabled: false
+      beacon_api_eth_v2_beacon_block_attester_slashing_s3:
+        type: aws_s3
+        inputs:
+          - xatu_server_events_router.eth_v2_beacon_block_attester_slashing
+        bucket: ${BUCKET}
+        compression: gzip
+        content_type: application/gzip
+        filename_extension: json.gz
+        endpoint: ${ENDPOINT}
+        region: "us-east-1"
+        key_prefix: "ingest/BEACON_API_ETH_V2_BEACON_BLOCK_ATTESTER_SLASHING/%F/%H/%M-"
+        auth:
+          access_key_id: ${AWS_ACCESS_KEY_ID}
+          secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+        encoding:
+          codec: json
+        acknowledgements:
+          enabled: false
+        buffer:
+          type: disk
+          max_size: 1073741952
+        batch:
+          max_bytes: 134217728
+          max_events: 1000000
+          timeout_secs: 60
+        healthcheck:
+          enabled: false
+      beacon_api_eth_v2_beacon_block_bls_to_execution_change_s3:
+        type: aws_s3
+        inputs:
+          - xatu_server_events_router.eth_v2_beacon_block_bls_to_execution_change
+        bucket: ${BUCKET}
+        compression: gzip
+        content_type: application/gzip
+        filename_extension: json.gz
+        endpoint: ${ENDPOINT}
+        region: "us-east-1"
+        key_prefix: "ingest/BEACON_API_ETH_V2_BEACON_BLOCK_BLS_TO_EXECUTION_CHANGE/%F/%H/%M-"
+        auth:
+          access_key_id: ${AWS_ACCESS_KEY_ID}
+          secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+        encoding:
+          codec: json
+        acknowledgements:
+          enabled: false
+        buffer:
+          type: disk
+          max_size: 1073741952
+        batch:
+          max_bytes: 134217728
+          max_events: 1000000
+          timeout_secs: 60
+        healthcheck:
+          enabled: false
+      beacon_api_eth_v2_beacon_block_execution_transaction_s3:
+        type: aws_s3
+        inputs:
+          - xatu_server_events_router.eth_v2_beacon_block_execution_transaction
+        bucket: ${BUCKET}
+        compression: gzip
+        content_type: application/gzip
+        filename_extension: json.gz
+        endpoint: ${ENDPOINT}
+        region: "us-east-1"
+        key_prefix: "ingest/BEACON_API_ETH_V2_BEACON_BLOCK_EXECUTION_TRANSACTION/%F/%H/%M-"
+        auth:
+          access_key_id: ${AWS_ACCESS_KEY_ID}
+          secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+        encoding:
+          codec: json
+        acknowledgements:
+          enabled: false
+        buffer:
+          type: disk
+          max_size: 1073741952
+        batch:
+          max_bytes: 134217728
+          max_events: 1000000
+          timeout_secs: 60
+        healthcheck:
+          enabled: false
+      beacon_api_eth_v2_beacon_block_voluntary_exit_s3:
+        type: aws_s3
+        inputs:
+          - xatu_server_events_router.eth_v2_beacon_block_voluntary_exit
+        bucket: ${BUCKET}
+        compression: gzip
+        content_type: application/gzip
+        filename_extension: json.gz
+        endpoint: ${ENDPOINT}
+        region: "us-east-1"
+        key_prefix: "ingest/BEACON_API_ETH_V2_BEACON_BLOCK_VOLUNTARY_EXIT/%F/%H/%M-"
+        auth:
+          access_key_id: ${AWS_ACCESS_KEY_ID}
+          secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+        encoding:
+          codec: json
+        acknowledgements:
+          enabled: false
+        buffer:
+          type: disk
+          max_size: 1073741952
+        batch:
+          max_bytes: 134217728
+          max_events: 1000000
+          timeout_secs: 60
+        healthcheck:
+          enabled: false
+      beacon_api_eth_v2_beacon_block_deposit_s3:
+        type: aws_s3
+        inputs:
+          - xatu_server_events_router.eth_v2_beacon_block_deposit
+        bucket: ${BUCKET}
+        compression: gzip
+        content_type: application/gzip
+        filename_extension: json.gz
+        endpoint: ${ENDPOINT}
+        region: "us-east-1"
+        key_prefix: "ingest/BEACON_API_ETH_V2_BEACON_BLOCK_DEPOSIT/%F/%H/%M-"
+        auth:
+          access_key_id: ${AWS_ACCESS_KEY_ID}
+          secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+        encoding:
+          codec: json
+        acknowledgements:
+          enabled: false
+        buffer:
+          type: disk
+          max_size: 1073741952
+        batch:
+          max_bytes: 134217728
+          max_events: 1000000
+          timeout_secs: 60
+        healthcheck:
+          enabled: false
+      beacon_api_eth_v2_beacon_block_withdrawal_s3:
+        type: aws_s3
+        inputs:
+          - xatu_server_events_router.eth_v2_beacon_block_withdrawal
+        bucket: ${BUCKET}
+        compression: gzip
+        content_type: application/gzip
+        filename_extension: json.gz
+        endpoint: ${ENDPOINT}
+        region: "us-east-1"
+        key_prefix: "ingest/BEACON_API_ETH_V2_BEACON_BLOCK_WITHDRAWAL/%F/%H/%M-"
         auth:
           access_key_id: ${AWS_ACCESS_KEY_ID}
           secret_access_key: ${AWS_SECRET_ACCESS_KEY}

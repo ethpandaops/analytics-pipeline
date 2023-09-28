@@ -240,6 +240,7 @@ topics:
         retention.ms: 3600000
         segment.bytes: 1073741824
         compression.type: snappy
+        max.message.bytes: 10485760 # 10MB
   beacon-api-eth-v2-beacon-block:
     enabled: true
     spec:
@@ -306,7 +307,7 @@ topics:
       partitions: 12
       replicas: 2
       config:
-        retention.ms: 259200000
+        retention.ms: 3600000
         segment.bytes: 1073741824
         compression.type: snappy
   beacon-api-eth-v1-validator-attestation-data:
@@ -316,5 +317,69 @@ topics:
       replicas: 2
       config:
         retention.ms: 3600000
+        segment.bytes: 1073741824
+        compression.type: snappy
+  beacon-api-eth-v2-beacon-block-proposer-slashing:
+    enabled: true
+    spec:
+      partitions: 12
+      replicas: 2
+      config:
+        retention.ms: 259200000
+        segment.bytes: 1073741824
+        compression.type: snappy
+  beacon-api-eth-v2-beacon-block-attester-slashing:
+    enabled: true
+    spec:
+      partitions: 12
+      replicas: 2
+      config:
+        retention.ms: 259200000
+        segment.bytes: 1073741824
+        compression.type: snappy
+  beacon-api-eth-v2-beacon-block-bls-to-execution-change:
+    enabled: true
+    spec:
+      partitions: 12
+      replicas: 2
+      config:
+        retention.ms: 259200000
+        segment.bytes: 1073741824
+        compression.type: snappy
+  beacon-api-eth-v2-beacon-block-execution-transaction:
+    enabled: true
+    spec:
+      partitions: 12
+      replicas: 2
+      config:
+        retention.ms: 3600000
+        segment.bytes: 1073741824
+        compression.type: snappy
+        max.message.bytes: 10485760 # 10MB
+  beacon-api-eth-v2-beacon-block-voluntary-exit:
+    enabled: true
+    spec:
+      partitions: 12
+      replicas: 2
+      config:
+        retention.ms: 259200000
+        segment.bytes: 1073741824
+        compression.type: snappy
+  beacon-api-eth-v2-beacon-block-deposit:
+    enabled: true
+    spec:
+      partitions: 12
+      replicas: 2
+      config:
+        retention.ms: 259200000
+        segment.bytes: 1073741824
+        compression.type: snappy
+  beacon-api-eth-v2-beacon-block-withdrawal:
+    enabled: true
+    spec:
+      partitions: 12
+      replicas: 2
+      config:
+        retention.ms: 259200000
         segment.bytes: 1073741824
         compression.type: snappy
