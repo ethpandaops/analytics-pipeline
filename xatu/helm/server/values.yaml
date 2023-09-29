@@ -1,0 +1,162 @@
+xatu-server:
+  fullnameOverride: xatu-server
+
+  podLabels:
+    app.kubernetes.io/part-of: xatu-server
+
+  replicas: 3
+
+  terminationGracePeriodSeconds: 600
+
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 24
+    targetCPUUtilizationPercentage: 85
+
+  podDisruptionBudget:
+    enabled: true
+    maxUnavailable: 10%
+
+  resources:
+    requests:
+      cpu: 128m
+      memory: 256Mi
+
+  initContainers:
+    - image: alpine
+      command:
+        - /bin/sh
+        - -c
+        - |
+          mkdir -p /etc/maxmind/
+          cd /etc/maxmind/
+          apk add wget
+          wget -O city.tar.gz "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=FILL_ME&suffix=tar.gz"
+          tar -xf city.tar.gz
+          mv "$(ls -d */|head -n 1)/GeoLite2-City.mmdb" ./
+          rm -rf $(ls -d */|head -n 1)
+          rm city.tar.gz
+          wget -O city.tar.gz "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN&license_key=FILL_ME&suffix=tar.gz"
+          tar -xf city.tar.gz
+          mv "$(ls -d */|head -n 1)/GeoLite2-ASN.mmdb" ./
+          rm -rf $(ls -d */|head -n 1)
+          rm city.tar.gz
+      name: init-maxmind
+      volumeMounts:
+        - name: maxmind
+          mountPath: /etc/maxmind
+
+  extraVolumeMounts:
+    - name: maxmind
+      mountPath: /etc/maxmind
+
+  extraVolumes:
+    - name: maxmind
+      emptyDir: {}
+
+  config:
+    logging: "info"
+    addr: ":8080"
+    preStopSleepSeconds: 15
+    metricsAddr: ":9090"
+    pprofAddr: ":6060"
+    ntpServer: time.google.com
+    geoip:
+      enabled: true
+      type: maxmind
+      config:
+        database:
+          city: /etc/maxmind/GeoLite2-City.mmdb
+          asn: /etc/maxmind/GeoLite2-ASN.mmdb
+    persistence:
+      enabled: true
+      connectionString: postgres://FILL_ME:FILL_ME@FILL_ME:5432/xatu?sslmode=disable
+      driverName: postgres
+      maxIdleConns: 2
+      maxOpenConns: 3
+    store:
+      type: memory
+      type: redis-server
+      config:
+        address: redis://default:FILL_ME@FILL_ME:6379
+        prefix: xatu
+    services:
+      coordinator:
+        enabled: true
+        nodeRecord:
+          maxQueueSize: 51200
+          batchTimeout: 5s
+          exportTimeout: 30s
+          maxExportBatchSize: 512
+      eventIngester:
+        enabled: true
+        outputs:
+        - name: general
+          type: http
+          filter:
+            eventNames:
+              - BEACON_API_ETH_V1_EVENTS_UNKNOWN
+              - BEACON_API_ETH_V1_BEACON_COMMITTEE
+              - BEACON_API_ETH_V1_EVENTS_BLOCK
+              - BEACON_API_ETH_V1_EVENTS_BLOCK_V2
+              - BEACON_API_ETH_V1_EVENTS_CHAIN_REORG
+              - BEACON_API_ETH_V1_EVENTS_CHAIN_REORG_V2
+              - BEACON_API_ETH_V1_EVENTS_FINALIZED_CHECKPOINT
+              - BEACON_API_ETH_V1_EVENTS_FINALIZED_CHECKPOINT_V2
+              - BEACON_API_ETH_V1_EVENTS_HEAD
+              - BEACON_API_ETH_V1_EVENTS_HEAD_V2
+              - BEACON_API_ETH_V1_EVENTS_VOLUNTARY_EXIT
+              - BEACON_API_ETH_V1_EVENTS_VOLUNTARY_EXIT_V2
+              - BEACON_API_ETH_V1_EVENTS_CONTRIBUTION_AND_PROOF
+              - BEACON_API_ETH_V1_EVENTS_CONTRIBUTION_AND_PROOF_V2
+              - BEACON_API_ETH_V1_VALIDATOR_ATTESTATION_DATA
+              - BEACON_API_ETH_V2_BEACON_BLOCK_PROPOSER_SLASHING
+              - BEACON_API_ETH_V2_BEACON_BLOCK_ATTESTER_SLASHING
+              - BEACON_API_ETH_V2_BEACON_BLOCK_BLS_TO_EXECUTION_CHANGE
+              - BEACON_API_ETH_V2_BEACON_BLOCK_EXECUTION_TRANSACTION
+              - BEACON_API_ETH_V2_BEACON_BLOCK_VOLUNTARY_EXIT
+              - BEACON_API_ETH_V2_BEACON_BLOCK_DEPOSIT
+              - BEACON_API_ETH_V2_BEACON_BLOCK_WITHDRAWAL
+              - MEMPOOL_TRANSACTION
+              - MEMPOOL_TRANSACTION_V2
+              - BEACON_API_ETH_V2_BEACON_BLOCK
+              - BEACON_API_ETH_V2_BEACON_BLOCK_V2
+          config:
+            address: FILL_ME
+            maxQueueSize: 102400
+            batchTimeout: 5s
+            exportTimeout: 30s
+            maxExportBatchSize: 32
+            compression: gzip
+            keepAlive: false # Disabled to avoid hot-pathing a single vector instance downstream
+        - name: attestation
+          type: http
+          filter:
+            eventNames:
+              - BEACON_API_ETH_V1_EVENTS_ATTESTATION
+              - BEACON_API_ETH_V1_EVENTS_ATTESTATION_V2
+          config:
+            address: FILL_ME
+            maxQueueSize: 102400
+            batchTimeout: 5s
+            exportTimeout: 30s
+            maxExportBatchSize: 64
+            compression: gzip
+            keepAlive: false # Disabled to avoid hot-pathing a single vector instance downstream
+        - name: fork-choice
+          type: http
+          filter:
+            eventNames:
+              - BEACON_API_ETH_V1_DEBUG_FORK_CHOICE
+              - BEACON_API_ETH_V1_DEBUG_FORK_CHOICE_V2
+              - BEACON_API_ETH_V1_DEBUG_FORK_CHOICE_REORG
+              - BEACON_API_ETH_V1_DEBUG_FORK_CHOICE_REORG_V2
+          config:
+            address: FILL_ME
+            maxQueueSize: 10000
+            batchTimeout: 5s
+            exportTimeout: 30s
+            maxExportBatchSize: 32
+            compression: gzip
+            keepAlive: false # Disabled to avoid hot-pathing a single vector instance downstream

@@ -1,0 +1,37 @@
+xatu-cannon:
+  fullnameOverride: xatu-cannon
+
+  resources:
+    limits:
+      cpu: 2
+      memory: 4Gi
+    requests:
+      cpu: 1
+      memory: 2Gi
+
+  config:
+    logging: "info"
+    metricsAddr: ":9090"
+    pprofAddr: ":6060"
+    name:  FILL_ME
+    ethereum:
+      beaconNodeAddress: FILL_ME
+      beaconNodeHeaders: {} #FILL_ME
+      blockCacheSize: 3000
+      blockCacheTtl: 3h
+      blockPreloadWorkers: 15
+    coordinator:
+      address: FILL_ME
+      tls: true
+      headers:
+        authorization: FILL_ME
+    outputs:
+    - name: grpc
+      type: xatu
+      config:
+        address: FILL_ME
+        maxQueueSize: 1000000
+        tls: true
+        headers:
+          authorization: FILL_ME
+        maxExportBatchSize: 64

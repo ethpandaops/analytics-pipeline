@@ -1,0 +1,24 @@
+ethereum-node:
+  global:
+    clientArgs:
+      networks:
+        mainnet:
+          consensus:
+            lighthouse:
+            - --network=mainnet
+            - --subscribe-all-subnets
+            - --import-all-attestations
+            - --disable-deposit-contract-sync
+  ethereum-metrics-exporter:
+    podLabels:
+      consensus_client: lighthouse
+  lighthouse:
+    enabled: true
+    podLabels:
+      ethereum_role: consensus
+    podAnnotations:
+      "cluster-autoscaler.kubernetes.io/safe-to-evict": "false"
+    image:
+      repository: ethpandaops/lighthouse
+      # required to stop backfilling
+      tag: xatu-sentry-31daf3a

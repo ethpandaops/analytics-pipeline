@@ -1,0 +1,24 @@
+ethereum-node:
+  global:
+    clientArgs:
+      networks:
+        mainnet:
+          consensus:
+            prysm:
+              - --mainnet
+              - --enable-debug-rpc-endpoints
+              - --save-full-execution-payloads
+              - --subscribe-all-subnets
+  ethereum-metrics-exporter:
+    podLabels:
+      consensus_client: prysm
+  prysm:
+    enabled: true
+    podLabels:
+      consensus_client: prysm
+      ethereum_role: consensus
+    podAnnotations:
+      "cluster-autoscaler.kubernetes.io/safe-to-evict": "false"
+    image:
+      repository: ethpandaops/prysm
+      tag: develop-d2ff995

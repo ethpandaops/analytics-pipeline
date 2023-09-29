@@ -1,0 +1,9 @@
+ethereum-node:
+  global:
+    main:
+      network: goerli
+  ethereum-metrics-exporter:
+    podLabels:
+      network: goerli
+      testnet: goerli
+      ethereum_network: goerli

@@ -1,0 +1,9 @@
+ethereum-node:
+  global:
+    main:
+      network: mainnet
+  ethereum-metrics-exporter:
+    podLabels:
+      network: mainnet
+      testnet: mainnet
+      ethereum_network: mainnet

@@ -1,0 +1,23 @@
+ethereum-node:
+  global:
+    clientArgs:
+      networks:
+        mainnet:
+          consensus:
+            teku:
+              - --network=mainnet
+              - --p2p-subscribe-all-subnets-enabled=true
+              - --data-storage-mode=minimal
+  ethereum-metrics-exporter:
+    podLabels:
+      consensus_client: teku
+  teku:
+    enabled: true
+    podLabels:
+      consensus_client: teku
+      ethereum_role: consensus
+    podAnnotations:
+      "cluster-autoscaler.kubernetes.io/safe-to-evict": "false"
+    image:
+      repository: ethpandaops/teku
+      tag: master-03d2812

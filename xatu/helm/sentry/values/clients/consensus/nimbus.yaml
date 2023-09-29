@@ -1,0 +1,22 @@
+ethereum-node:
+  global:
+    clientArgs:
+      networks:
+        holesky:
+          consensus:
+            nimbus:
+            - --network=holesky
+            - --subscribe-all-subnets
+  ethereum-metrics-exporter:
+    podLabels:
+      consensus_client: nimbus
+  nimbus:
+    enabled: true
+    podLabels:
+      consensus_client: nimbus
+      ethereum_role: consensus
+    podAnnotations:
+      "cluster-autoscaler.kubernetes.io/safe-to-evict": "false"
+    image:
+      repository: ethpandaops/nimbus
+      tag: xatu-sentry-41634f6

@@ -1,0 +1,9 @@
+ethereum-node:
+  global:
+    main:
+      network: sepolia
+  ethereum-metrics-exporter:
+    podLabels:
+      network: sepolia
+      testnet: sepolia
+      ethereum_network: sepolia

@@ -1,0 +1,35 @@
+xatu-mimicry:
+  fullnameOverride: xatu-mimicry
+
+  resources:
+    limits:
+      cpu: 1024m
+      memory: 1536Mi
+    requests:
+      cpu: 512m
+      memory: 512Mi
+
+  terminationGracePeriodSeconds: 300
+
+  config:
+    logging: "info"
+    metricsAddr: ":9090"
+    pprofAddr: ":6060"
+    probeAddr: ":8080"
+    captureDelay: 3m
+    name:  FILL_ME
+    coordinator:
+      type: xatu
+      config:
+        address: FILL_ME
+        maxPeers: 100
+        networkIds:
+        - 1
+        forkIdHashes:
+        - "0xdce96c2d"
+    outputs:
+    - name: grpc
+      type: xatu
+      config:
+        address: FILL_ME
+        maxExportBatchSize: 32

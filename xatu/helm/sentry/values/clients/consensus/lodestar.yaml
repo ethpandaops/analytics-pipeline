@@ -1,0 +1,23 @@
+ethereum-node:
+  global:
+    clientArgs:
+      networks:
+        mainnet:
+          consensus:
+            lodestar:
+              - --network=mainnet
+              - --rest.namespace "beacon,config,events,node,validator,lightclient,debug"
+              - --subscribeAllSubnets
+  ethereum-metrics-exporter:
+    podLabels:
+      consensus_client: lodestar
+  lodestar:
+    enabled: true
+    podLabels:
+      consensus_client: lodestar
+      ethereum_role: consensus
+    podAnnotations:
+      "cluster-autoscaler.kubernetes.io/safe-to-evict": "false"
+    image:
+      repository: ethpandaops/lodestar
+      tag: unstable-108b8ed

@@ -1,0 +1,9 @@
+ethereum-node:
+  global:
+    main:
+      network: holesky
+  ethereum-metrics-exporter:
+    podLabels:
+      network: holesky
+      testnet: holesky
+      ethereum_network: holesky

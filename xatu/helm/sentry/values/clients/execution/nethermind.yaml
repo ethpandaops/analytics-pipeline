@@ -1,0 +1,12 @@
+ethereum-node:
+  ethereum-metrics-exporter:
+    podLabels:
+      execution_client: nethermind
+  nethermind:
+    enabled: true
+    podLabels:
+      ethereum_role: execution
+    podAnnotations:
+      "cluster-autoscaler.kubernetes.io/safe-to-evict": "false"
+  xatu-sentry:
+    enabled: false
