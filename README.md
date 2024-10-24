@@ -19,8 +19,8 @@ graph LR
     end
     subgraph Cloud object storage
         Vector3 -->|s3 sink| S3Events[r2 raw event backup bucket]
-        Clickhouse -->|cronjob export parquet| S3Public[r2 Public bucket data.ethpandaops.io]
-        Clickhouse -->|cronjob export parquet| S3GCS[GCS bucket]
+        S3Public[r2 Public bucket data.ethpandaops.io]
+        S3GCS[GCS bucket]
     end
     subgraph Clients
         XatuSentry[Xatu Sentry] -->|beaconAPI| ConsensusClient[Consensus Client]
