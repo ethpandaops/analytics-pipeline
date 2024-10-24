@@ -17,16 +17,41 @@ graph LR
         Clickhouse --> dbt[dbt]
         dbt --> Clickhouse
     end
-    subgraph Storage
-        Vector3 -->|s3 sink| S3
+    subgraph Cloud object storage
+        Vector3 -->|s3 sink| S3Events[r2 raw event backup bucket]
+        Clickhouse -->|cronjob export parquet| S3Public[r2 Public bucket data.ethpandaops.io]
+        Clickhouse -->|cronjob export parquet| S3GCS[GCS bucket]
     end
     subgraph Clients
         XatuSentry[Xatu Sentry] -->|beaconAPI| ConsensusClient[Consensus Client]
         XatuCannon[Xatu Cannon] -->|beaconAPI| ConsensusClient
         XatuSentry -->|gRPC| XatuServer[Xatu Server]
-        XatuMimicry[Xatu Mimicry] -->|gRPC| XatuServer
+        XatuMimicryEL[Xatu Mimicry EL] -->|gRPC| XatuServer
+        XatuMimicryCL[Xatu Mimicry CL] -->|gRPC| XatuServer
         XatuCannon -->|gRPC| XatuServer
         XatuDiscovery[Xatu Discovery] -->|gRPC| XatuServer
+    end
+    subgraph Parquet Exporter
+        dailyexport[Daily export] -->|http| S3Public
+        dailyexport -->|http| S3GCS
+        dailyexport -->|native| Clickhouse
+        hourlyexport[Hourly export] -->|http| S3Public
+        hourlyexport -->|http| S3GCS
+        hourlyexport -->|native| Clickhouse
+        chunkexport[Chunk export] -->|http| S3Public
+        chunkexport -->|native| Clickhouse
+    end
+    subgraph BigQuery
+        S3GCS -->|Data transfer service| EUMainnet[EU Mainnet dataset]
+        S3GCS -->|Data transfer service| USMainnet[US Mainnet dataset]
+        S3GCS -->|Data transfer service| EUHolesky[EU Holesky dataset]
+        S3GCS -->|Data transfer service| USHolesky[US Holesky dataset]
+        S3GCS -->|Data transfer service| EUSepolia[EU Sepolia dataset]
+        S3GCS -->|Data transfer service| USSepolia[US Sepolia dataset]
+    end
+    subgraph Cryo
+        cryocronjob[Cryo extraction jobs] -->|http| Clickhouse
+        cryocronjob-->|execution JSON RPC| ExecutionClient[Execution Client]
     end
 ```
 
