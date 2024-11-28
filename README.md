@@ -78,7 +78,7 @@ We use [strimzi-kafka-operator](https://github.com/strimzi/strimzi-kafka-operato
 
 ## Clickhouse
 
-We us Altinity [clickhouse-operator](https://github.com/Altinity/clickhouse-operator) for the clickhouse cluster and [golange-migrate](https://github.com/golang-migrate/migrate) for migrations. The cluster is distributed with 3 shards and 2 replicas per shard.
+We us Altinity [clickhouse-operator](https://github.com/Altinity/clickhouse-operator) for the clickhouse cluster and [golang-migrate](https://github.com/golang-migrate/migrate) for migrations. The cluster is distributed with 3 shards and 2 replicas per shard.
 
 Example [golange-migrate](https://github.com/golang-migrate/migrate) command to run migrations:
 ```bash
